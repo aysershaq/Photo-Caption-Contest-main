@@ -5,6 +5,7 @@ const swaggerDocument = require("./swagger/swagger.json");
 const path = require("path");
 const userRouter = require("./routes/usersRoute")
 const imagesRouter = require("./routes/imagesRoutes")
+const votesRouter = require("./routes/votesRouts")
 const db = require("./models"); // ✅ not "./models/index"
 
 const app = express();
@@ -29,6 +30,7 @@ store,
 app.use("/api",imagesRouter)
 
 app.use("/api",userRouter)
+app.use("/api",votesRouter)
 
 app.get("/api", (req, res) => {
   res.send("hello world");

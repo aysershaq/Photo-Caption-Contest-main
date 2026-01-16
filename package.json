@@ -4,7 +4,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --watch server.js  --watch routes/ --watch models/ --watch middlewares --watch imageCache.js"
+    "start": "nodemon --watch server.js  --watch routes/ --watch models/ --watch middlewares/ --watch imageCache.js --watch controllers/ --watch migrations/ " 
   },
   "author": "",
   "license": "ISC",

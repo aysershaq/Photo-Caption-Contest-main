@@ -11,28 +11,17 @@ const Images = sequelize.define(
       autoIncrement:true,
       primaryKey:true
     },
-    caption: { 
-      type: DataTypes.STRING
-    },
+    
     imageUrl: { 
       
       type: DataTypes.STRING, 
       allowNull: false 
     },
-    captionByUserId:{
-        type: DataTypes.INTEGER,
-       allowNull: true, 
-    }
+    
     
   }
   
 );
-Images.associate = (models) => {
-    // الصورة تتبع المستخدم الذي أضاف الكابشن
-    Images.belongsTo(models.Users, {
-      foreignKey: "captionByUserId",
-      as: "captionByUser",
-    });
-  };
+
   return Images ; 
 }
