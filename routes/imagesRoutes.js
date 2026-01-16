@@ -3,7 +3,7 @@ const app =  require("../server")
 const db = require("../models"); 
 const { cacheResponse } = require("../middlewares/cache");
 const imagesContollers = require("../controllers/imagesControllers")
-
+const verifyToken = require("../middlewares/jwt")
 const bcrypt = require("bcrypt")
 
  const imagesRouter = express.Router();
@@ -45,37 +45,25 @@ const upload = multer({
 });
 
 
-function authorizedUser(req,res,next) {
-// Check for the authorized property within the session
-
-
- if (req.session && req.session.authenticated=== true) {
-    return next(); // السماح بالوصول
-  
-}else{return res.status(401).json({
-    message: "Authentication required"
-  });
-}
-};
 
 
 
-imagesRouter.post("/add-image", upload.single("image"),ensureAuth,ensureAdmin, imagesContollers.addNewImage);
+imagesRouter.post("/add-image", verifyToken,ensureAuth,ensureAdmin, upload.single("image"),imagesContollers.addNewImage);
 
 
 
-imagesRouter.get("/all-images",ensureAuth,imagesContollers.getAllImages)
+imagesRouter.get("/all-images",verifyToken,ensureAuth,imagesContollers.getAllImages)
 
 
- imagesRouter.get("/image/:id",ensureAuth,imagesContollers.getImageById)
+ imagesRouter.get("/image/:id",verifyToken,ensureAuth,imagesContollers.getImageById)
 
 
-   imagesRouter.post("/add-caption/:id",ensureAuth,imagesContollers.addNewCaption);
+   imagesRouter.post("/add-caption/:id",verifyToken,ensureAuth,imagesContollers.addNewCaption);
    
 
-imagesRouter.delete("/image/:id",ensureAuth,ensureAdmin,imagesContollers.deleteImage)
+imagesRouter.delete("/image/:id",verifyToken,ensureAuth,ensureAdmin,imagesContollers.deleteImage)
 
-imagesRouter.delete("/delete-caption/:id",ensureAuth,imagesContollers.deleteCaption)
+imagesRouter.delete("/delete-caption/:id",verifyToken,ensureAuth,imagesContollers.deleteCaption)
   // Create a new user object to store in the database:
  
  

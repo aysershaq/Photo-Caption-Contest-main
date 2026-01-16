@@ -2,9 +2,9 @@ const { Votes, Captions } = require('../models');
 const db = require("../models/index")
 exports.createVote = async (req, res, next) => {
   try {
-    const userId = req.session.userId;
+    const userId = req.user.id;
     const  captionId  = Number(req.params.captionId);
-      console.log("ID IS ",captionId)
+      
     if (!captionId) {
       return res.status(400).json({ error: 'captionId مطلوب' });
     }
@@ -12,7 +12,7 @@ exports.createVote = async (req, res, next) => {
     // تأكد أن الـcaption موجود
     const caption = await db.Captions.findOne({where:{id:captionId}});
     if (!caption) {
-      return res.status(404).json({ error: 'Caption غير موجود' });
+      return res.status(404).json({ error: 'Caption not found' });
     }
 
     const existingVotes = await db.Votes.findOne({where:{captionId,userId}})
@@ -66,7 +66,7 @@ exports.deleteVote = async (req, res, next) => {
 
 exports.getCaptionVoteStats = async (req, res, next) => {
   try {
-    const userId = req.session.userId;
+    const userId = req.user.id;
     const captionId = Number(req.params.captionId);
 
     if (!captionId || Number.isNaN(captionId)) {

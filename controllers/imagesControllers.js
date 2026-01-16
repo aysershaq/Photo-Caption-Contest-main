@@ -16,29 +16,40 @@ module.exports ={
   
       // خزّن metadata + الرابط في DB
       const image = await db.Images.create({
-        id:req.id,
+        
         imageUrl: publicUrl,
         alt: req.body.alt || null,
         mimeType: req.file.mimetype,
         sizeBytes: req.file.size,
         originalName: req.file.originalname,
-        user_id: req.id // لو عندك auth
+       
       });
   
       return res.status(201).json({
         message: "Image uploaded successfully",
         image: {
           id: image.id,
-          url: image.url,
+          url: image.imageUrl,
           alt: image.alt,
           mimeType: image.mimeType,
           sizeBytes: image.sizeBytes,
         },
       });
     } catch (err) {
-      return res.status(500).json({ message: "Upload failed", error: err.message });
-    }
-  },
+      return res.status(500).json({ 
+        
+        message: "Upload failed",
+         error: err.message ,
+         details: err?.errors?.map(e => ({
+      message: e.message,
+      path: e.path,
+      value: e.value,
+      validatorKey: e.validatorKey
+        
+        
+        }))
+    })
+  }},
   getAllImages:async(req,res)=>{
   try{
   const images =await db.Images.findAll();
@@ -92,7 +103,7 @@ getImageById:async(req,res)=>{
  
       const user = await db.Users.findOne()
   
-      const Caption = await db.Captions.create({text: caption,imageId:image.id,userId: req.session.user.id});
+      const Caption = await db.Captions.create({text: caption,imageId:image.id,userId: req.user.id});
   
       return res.status(200).json({
         message: "caption added successfully",
@@ -141,7 +152,7 @@ getImageById:async(req,res)=>{
 deleteCaption:async (req, res, next) => {
   try {
     const captionId = Number(req.params.id);
-    const currentUser = req.session.user;
+    const currentUser = req.user;
 
     if (!captionId || Number.isNaN(captionId)) {
       return res.status(400).json({ error: 'captionId not valid' });
@@ -176,5 +187,4 @@ deleteCaption:async (req, res, next) => {
   }
 
 }
-
 }

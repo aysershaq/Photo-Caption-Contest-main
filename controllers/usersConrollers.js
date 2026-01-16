@@ -1,6 +1,7 @@
 const { Votes, Captions } = require('../models');
 const db = require("../models/index")
 const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
 
 
 module.exports={
@@ -97,17 +98,29 @@ try{
 const matchedPassword = await bcrypt.compare(password, user.passwordHash);
 
 if(matchedPassword){
+  const token = jwt.sign(
+    { id: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  res.cookie("access_token", token, {
+    httpOnly: true,     // يمنع JavaScript من الوصول للتوكن
+    secure: false,      // HTTPS فقط (في الإنتاج)
+    sameSite: "strict", // حماية من CSRF
+    maxAge: 24 * 60 * 60 * 1000 // ساعة
+  });
  
   // req.session.userId = user.id;
-   req.session.authenticated =true;
-   req.session.userId = user.id
-   req.session.user = {id:user.id ,role:user.role}
+  //  req.session.authenticated =true;
+  //  req.session.userId = user.id
+  //  req.session.user = {id:user.id ,role:user.role}
 
 //   req.session.user= {
 //       email,
       
 //   }
- res.status(200).json({status:"login successfully",user:user})
+ res.status(200).json({status:"login successfully",user:user,token})
  }else {
   return res.status(401).send("Password not matched");
 }
@@ -120,21 +133,15 @@ if(matchedPassword){
 }
 },
 logOutUser:(req, res) => {
-  // إذا كانت هناك جلسة
-  if (req.session) {
-    // دمار الجلسة في الـ store
-    req.session.destroy(err => {
-      if (err) {
-        return res.status(500).json({ message: "Logout failed", error: err.message });
-      }
-      // إزالة كوكي من المتصفح/العميل
-      res.clearCookie("connect.sid" ,{ path: "/" });
-      return res.status(200).json({ message: "Logged out successfully" });
-    });
-  } else {
-    // لو ما في جلسة أصلاً
-    return res.status(200).json({ message: "No active session" });
-  }
+
+ res.clearCookie("access_token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",              // مهم
+  });
+
+  return res.status(200).json({ message: "Logged out" });
 },
 
 updateUserRole: async (req, res, next) => {
@@ -146,12 +153,12 @@ updateUserRole: async (req, res, next) => {
     const allowedRoles = ['user', 'admin'];
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({
-        error: 'قيمة role غير صالحة'
+        error: 'not valid value of role'
       });
     }
 
     // 2️⃣ منع الأدمن من تغيير دوره بنفسه (اختياري لكن احترافي)
-    if (req.session.userId === Number(targetUserId)) {
+    if (req.user.id === Number(targetUserId)) {
       return res.status(400).json({
         error: 'you cant change your own role'
       });
@@ -172,7 +179,7 @@ updateUserRole: async (req, res, next) => {
 
     // 5️⃣ Audit log (مهم)
     console.log(
-      `[ROLE CHANGE] Admin(${req.session.userId}) changed user(${user.id}) from ${oldRole} to ${role}`
+      `[ROLE CHANGE] Admin(${req.user.Id}) changed user(${user.id}) from ${oldRole} to ${role}`
     );
 
     return res.json({

@@ -7,7 +7,7 @@ const session =require("express-session")
 const usersController = require("../controllers/usersConrollers");
 const { ensureAuth ,ensureAdmin } = require("../middlewares/auth");
 const userRouter =  express.Router();
-
+const verifyToken = require("../middlewares/jwt")
 
 
 
@@ -29,5 +29,5 @@ userRouter.post("/register", usersController.addNewUser);
 userRouter.post("/login",usersController.logInUser)
 
 userRouter.post("/logout", usersController.logOutUser);
-userRouter.patch("/users/:id/role",ensureAuth,ensureAdmin,usersController.updateUserRole)
+userRouter.patch("/users/:id/role",verifyToken,ensureAuth,ensureAdmin,usersController.updateUserRole)
 module.exports = userRouter
