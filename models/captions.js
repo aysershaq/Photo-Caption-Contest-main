@@ -34,15 +34,24 @@ const Captions = sequelize.define(
   }
   
 );
+{
+  indexes: [
+    { fields: ['userId'] },
+    { fields: ['imageId'] },
+    { unique: true, fields: ['userId', 'id'] } // مثال: فهرس فريد مركب لجدول Votes
+  ]
+};
 Captions.associate = (models) => {
     // الصورة تتبع المستخدم الذي أضاف الكابشن
     Captions.belongsTo(models.Users, {
       foreignKey: "userId",
       as: "captionByUser",
+      onDelete: 'CASCADE' 
     });
     Captions.belongsTo(models.Images, {
       foreignKey: "imageId",
       as: "image_Id",
+      onDelete: 'CASCADE' 
     });
   ;
   };

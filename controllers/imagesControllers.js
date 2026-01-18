@@ -3,6 +3,8 @@ const db = require("../models/index")
 const path = require("path")
 const fs = require("fs");
 
+const sanitizeCaption = require("../utils/sanitize")
+
 module.exports ={
 
   addNewImage:async (req, res) => {
@@ -52,6 +54,12 @@ module.exports ={
   }},
   getAllImages:async(req,res)=>{
   try{
+
+     // تحقق إن كانت النتيجة مخزنة مؤقتًا
+    let photos = cache.get('all-images');
+    if (photos) {
+      return res.json(photos); // إعادة البيانات من الذاكرة فورًا
+    }
   const images =await db.Images.findAll();
     console.log(images)
   res.status(200).json({status:"done",images:images})
@@ -90,6 +98,11 @@ getImageById:async(req,res)=>{
     }
   },
   addNewCaption:async(req,res)=>{
+    const rawText = req.body.caption;
+const text = sanitizeCaption(rawText);
+if (text.length === 0 || text.length > 250) {
+  return res.status(400).json({ error: "نص التسمية التوضيحية مطلوب ويجب أن لا يتجاوز 250 حرفًا." });
+}
      try {
       const { caption } = req.body;
        const image = await db.Images.findOne({where:{id:req.params.id}});
@@ -97,7 +110,7 @@ getImageById:async(req,res)=>{
       if (!image) {
         return res.status(404).json({ message: "image not found" });
       }
-      if (!caption || caption.trim() === "") {
+      if (!caption) {
         return res.status(400).json({ message: "caption is required" });
       }
  

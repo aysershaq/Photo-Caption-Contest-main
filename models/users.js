@@ -40,5 +40,11 @@ const Users = sequelize.define(
     // Other model options go here
   },
 );
+
+Users.associate = (models) => {
+  Users.hasMany(models.Captions, { foreignKey: 'userId', onDelete: 'CASCADE' });
+  Users.hasMany(models.Votes, { foreignKey: 'userId', onDelete: 'CASCADE' }); // إن وجد جدول للتصويتات
+};
+
   return Users;
 }

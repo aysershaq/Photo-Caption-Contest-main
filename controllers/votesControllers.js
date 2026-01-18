@@ -40,8 +40,8 @@ exports.createVote = async (req, res, next) => {
 
 exports.deleteVote = async (req, res, next) => {
   try {
-    const userId = req.session.user.id;
-    const { captionId } = req.params;
+    const userId = req.user.id;
+    const  {captionId}  = req.params;
 
     if (!captionId) {
       return res.status(400).json({ error: 'captionId مطلوب' });

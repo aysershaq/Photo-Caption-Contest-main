@@ -28,17 +28,26 @@ const Votes = sequelize.define(
       },
   }
   
-);
+);{
+  indexes: [
+    { fields: ['userId'] },
+    
+    { unique: true, fields: ['userId', 'captionId'] } // مثال: فهرس فريد مركب لجدول Votes
+  ]
+};
 Votes.associate = (models) => {
     // الصورة تتبع المستخدم الذي أضاف الكابشن
     Votes.belongsTo(models.Users, {
       foreignKey: "userId",
-      as: "captionByUser",
+      as: "voteByUser",
+      onDelete: 'CASCADE'
     });
       Votes.belongsTo(models.Users, {
       foreignKey: "captionId",
       as: "caption",
+      onDelete: 'CASCADE' 
     });
+     Votes.belongsTo(models.Captions, { foreignKey: 'captionId', onDelete: 'CASCADE' });
   };
   return Votes ; 
 }

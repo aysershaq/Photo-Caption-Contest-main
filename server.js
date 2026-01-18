@@ -9,12 +9,34 @@ const imagesRouter = require("./routes/imagesRoutes")
 const votesRouter = require("./routes/votesRouts")
 const db = require("./models"); // ✅ not "./models/index"
 const cookieParser = require("cookie-parser");
+const helmet = require('helmet');
+const cors = require('cors');
+const compression = require('compression');
+// في أعلى الملف (app.js أو service معين)
+const NodeCache = require('node-cache');
+const dotenv = require("dotenv")
+const cache = new NodeCache({ stdTTL: 60 });
+
+const nodeEnv = process.env.NODE_ENV || "development";
+const envFile = nodeEnv === "production" ? ".env.production" : ".env.development";
+dotenv.config({ path: envFile });
 
 const app = express();
 require('dotenv').config();
 const PORT = process.env.PORT || 3000;
-
-
+function sanitizeCaption(caption) {
+  return sanitizeHtml(caption, {
+    allowedTags: [],
+    allowedAttributes: {}
+  });
+}
+app.use(helmet());
+app.use(cors({
+  origin: ['https://myapp.example.com'], // السماح لهذا النطاق فقط
+  methods: ['GET','POST','PUT','DELETE'],
+  credentials: true  // السماح بإرسال الكوكي/التوكن عبر الطلبات (إن لزم)
+}));
+app.use(compression());
 // يجعل أي ملف داخل uploads متاح عبر رابط:
 // http://localhost:3000/uploads/...
 app.use('/api/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -45,4 +67,4 @@ app.get("/api", (req, res) => {
   }
 })();
 
-module.exports = app
+module.exports = {app,sanitizeCaption}
